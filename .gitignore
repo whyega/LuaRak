@@ -1,0 +1,4 @@
+/.vscode
+/core/build
+/examples/luajit
+/examples/start.bat
