@@ -6,6 +6,7 @@
 #include "SOCKS5.hpp"
 #include "RakClient.h"
 #include "RakServer.h"
+#include "StringCompressor.h"
 
 #include "LuaBitStream.hpp"
 
@@ -25,6 +26,7 @@ public:
 	void InitializeBitStream();
 	void InitializeProxy();
 	void InitializeNetEncryption();
+	void InitializeStringCompressor();
 
 
 private:

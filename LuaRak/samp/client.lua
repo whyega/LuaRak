@@ -127,6 +127,132 @@ end
 
 
 
+function LuaClient:sendClickPlayer(playerId, source)
+    local bs = bitstream:new()
+    bs:writeUInt16(playerId)
+    bs:writeUInt8(source)
+    self:sendRPC(23, bs)
+end
+
+
+
+function LuaClient:sendClickTextdraw(textdrawId)
+    local bs = bitstream:new()
+    bs:writeUInt16(textdrawId)
+    self:sendRPC(83, bs)
+end
+
+
+
+function LuaClient:sendDeathByPlayer(playerId, reason)
+    local bs = bitstream:new()
+    bs:writeUInt16(playerId)
+    bs:writeUInt8(reason)
+    self:sendRPC(53, bs)
+end
+
+
+
+function LuaClient:sendDialogResponse(dialogId, button, listitem, input)
+    local bs = bitstream:new()
+    bs:writeInt16(dialogId)
+    bs:writeInt8(button)
+    bs:writeInt16(listitem)
+    bs:writeString8(input)
+    self:sendRPC(62, bs)
+end
+
+
+
+function LuaClient:sampSendEditAttachedObject(response, index, model, bone, offsetX, offsetY, offsetZ, rotX, rotY, rotZ, scaleX, scaleY, scaleZ)
+    local bs = bitstream:new()
+    bs:writeInt32(response)
+    bs:writeInt32(index)
+    bs:writeInt32(model)
+    bs:writeInt32(bone)
+    bs:writeVector({offsetX, offsetY, offsetZ})
+    bs:writeVector({rotX, rotY, rotZ})
+    bs:writeVector({scaleX, scaleY, scaleZ})
+    self:sendRPC(116, bs)
+end
+
+
+
+function LuaClient:sampSendEditObject(playerObject, objectId, response, posX, posY, posZ, rotX, rotY, rotZ)
+    local bs = bitstream:new()
+    bs:writeBool(playerObject)
+    bs:writeInt16(objectId)
+    bs:writeInt32(response)
+    bs:writeVector({posX, posY, posZ})
+    bs:writeVector({rotX, rotY, rotZ})
+    self:sendRPC(117, bs)
+end
+
+
+
+function LuaClient:sampSendEnterVehicle(vehicleId, passenger)
+    local bs = bitstream:new()
+    bs:writeInt16(vehicleId)
+    bs:writeBool(passenger)
+    self:sendRPC(26, bs)
+end
+
+
+
+function LuaClient:sampSendExitVehicle(vehicleId)
+    local bs = bitstream:new()
+    bs:writeInt16(vehicleId)
+    self:sendRPC(154, bs)
+end
+
+
+
+function LuaClient:sampSendGiveDamage(playerId, damage, weapon, bodypart)
+    local bs = bitstream:new()
+    bs:writeBool(false)
+    bs:writeInt16(playerId)
+    bs:writeFloat(damage)
+    bs:writeInt32(weapon)
+    bs:writeInt32(bodypart)
+    self:sendRPC(115, bs)
+end
+
+
+
+function LuaClient:sampSendTakeDamage(playerId, damage, weapon, bodypart)
+    local bs = bitstream:new()
+    bs:writeBool(true)
+    bs:writeInt16(playerId)
+    bs:writeFloat(damage)
+    bs:writeInt32(weapon)
+    bs:writeInt32(bodypart)
+    self:sendRPC(115, bs)
+end
+
+
+
+function LuaClient:sampSendInteriorChange(interiorId)
+    local bs = bitstream:new()
+    bs:writeInt8(interiorId)
+    self:sendRPC(118, bs)
+end
+
+
+
+function LuaClient:sampSendMenuQuit()
+    self:sendRPC(140, "", 0)
+end
+
+
+
+function LuaClient:sampSendMenuSelectRow(id)
+    local bs = bitstream:new()
+    bs:writeInt8(id)
+    self:sendRPC(132, bs)
+end
+
+
+
 function LuaClient:updateNetwork()
     local packet = self.rakClient:Receive()
 

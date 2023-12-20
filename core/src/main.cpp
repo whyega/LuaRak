@@ -7,7 +7,7 @@ static sol::table open(sol::this_state ts)
 	sol::state_view lua(ts);
 	sol::table module = lua.create_table();
 
-	module["VERSION"] = 0.5;	
+	module["VERSION"] = 0.6;	
 
 	
 	LuaRak luarak(module);
@@ -17,6 +17,7 @@ static sol::table open(sol::this_state ts)
 	luarak.InitializeBitStream();
 	luarak.InitializeProxy();
 	luarak.InitializeNetEncryption();
+	luarak.InitializeStringCompressor();
 
 
 	return module;

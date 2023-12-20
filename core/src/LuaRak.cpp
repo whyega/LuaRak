@@ -334,3 +334,16 @@ void LuaRak::InitializeNetEncryption()
 	lua.set_function("kyretardizeDatagram", kyretardizeDatagram);
 	lua.set_function("unKyretardizeDatagram", unKyretardizeDatagram);
 }
+
+
+
+void LuaRak::InitializeStringCompressor()
+{
+	sol::usertype<StringCompressor> StringCompressorType = lua.new_usertype<StringCompressor>("StringCompressor");
+	StringCompressorType["AddReference"] = &StringCompressor::AddReference;	
+	StringCompressorType["DecodeString"] = &StringCompressor::DecodeString;
+	StringCompressorType["EncodeString"] = &StringCompressor::EncodeString;
+	StringCompressorType["GenerateTreeFromStrings"] = &StringCompressor::GenerateTreeFromStrings;
+	StringCompressorType["Instance"] = &StringCompressor::Instance;
+	StringCompressorType["RemoveReference"] = &StringCompressor::RemoveReference;
+}
