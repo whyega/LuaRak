@@ -25,7 +25,6 @@
 #include <random>
 #include "RakPeer.h"
 #include "RakClientInterface.h" 
-#include "SOCKS5.hpp"
 // #pragma deprecated(RakClient)
 
 /// This is a user-interface class to act as a game client.  All it does is implement some functionality on top of RakPeer.
@@ -405,13 +404,11 @@ public:
 	/// Retrieve the player index corresponding to this client. 
 	PlayerIndex GetPlayerIndex( void );
 
-	void RegisterSendHandler(sol::function func);
+	// --------------------------------------------------------------------------------------------Custom function for LuaRak--------------------------------------------------------------------------------------------
 
-	void RegisterRPCHandler(sol::function func);
+	void RegisterReceiveRPCHandler(sol::function handler);
 
-	void RegisterReceiveRPCHandler(sol::function func);
-	
-	void SetFakePing(bool bUseFakePing, __int32 ping);
+	void SetFakePing(bool bUseFakePing, int ping);
 
 private:
 	void* pRakClientProxy = nullptr;

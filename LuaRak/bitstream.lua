@@ -1,5 +1,6 @@
 local RakCore = require("LuaRak.core")
 local utils = require("LuaRak.utils")
+local ffi = require("ffi")
 
 
 
@@ -7,6 +8,9 @@ local BitStream = {}
 
 
 
+---Create new BitStrream object 
+---@param ... unknown
+---@return table
 function BitStream:new(...)
     local argCount = select("#", ...)
     if argCount == 0 or argCount == 3 then
@@ -17,74 +21,97 @@ function BitStream:new(...)
 
 
     return setmetatable(self, {
-        __index = function(t, k)
-            return rawget(t, k)
-        end
+        __index = rawget
     })
 end
 
 
 
+---Reset bitstream
 function BitStream:reset()
-    return self.bitstream:Reset()
+    self.bitstream:Reset()
 end
 
 
+---Reset pointer of read
 function BitStream:resetReadPointer()
-    return self.bitstream:ResetReadPointer()
+    self.bitstream:ResetReadPointer()
 end
 
 
+---Reset pointer of write
 function BitStream:resetWritePointer()
-    return self.bitstream:ResetReadPointer()
+    self.bitstream:ResetReadPointer()
 end
 
 
-function BitStream:setWriteOffset()
-    return self.bitstream:SetWriteOffset()
+---Sets pointer of write
+---@param offset number
+function BitStream:setWriteOffset(offset)
+    self.bitstream:SetWriteOffset(offset)
 end
 
 
+---Returns pointer of write
+---@return number
 function BitStream:getWriteOffset()
     return self.bitstream:GetWriteOffset()
 end
 
 
+---Sets pointer of read
+---@param offset number
+---@return unknown
 function BitStream:setReadOffset(offset)
     return self.bitstream:SetReadOffset(offset)
 end
 
 
+---Return pointer of read
+---@return number
 function BitStream:getReadOffset()
     return self.bitstream:GetReadOffset()
 end
 
 
+---
+---@return number
 function BitStream:getNumberOfBitsUsed()
     return self.bitstream:GetNumberOfBitsUsed()
 end
 
-
+---
+---@return number
 function BitStream:getNumberOfBytesUsed()
     return self.bitstream:GetNumberOfBytesUsed()
 end
 
 
+---
+---@return number
 function BitStream:getNumberOfUnreadBits()
     return self.bitstream:GetNumberOfUnreadBits()
 end
 
 
+---
+---@return integer
 function BitStream:getNumberOfUnreadBytes()
     return utils:convertBitsToBytes(self.bitstream:GetNumberOfUnreadBits())
 end
 
 
+---
+---@param bits number
+---@return unknown
 function BitStream:ignoreBits(bits)
     return self.bitstream:IgnoreBits(bits)
 end
 
 
+---
+---@param bytes number
+---@return unknown
 function BitStream:ignoreBytes(bytes)
     return self.bitstream:IgnoreBits(utils:convertBytesToBits(bytes))
 end
@@ -122,6 +149,13 @@ end
 
 function BitStream:writeFloat(value)
     return self.bitstream:WriteFloat(value)
+end
+
+
+function BitStream:writeVector3D(vector)
+    for value = 1, 3 do
+        self.bitstream:WriteFloat(value)
+    end
 end
 
 
@@ -171,13 +205,17 @@ function BitStream:readString(size)
 end
 
 
+---Returns the original BitStream class 
+---@return userdata
 function BitStream:getBitStream()
     return self.bitstream
 end
 
 
+---Return pointer of data 
+---@return unknown
 function BitStream:getDataPtr()
-    return self.bitstream:GetData()
+    return utils:getPointer(ffi.cast("unsigned char**", self.bitstream:GetData())[0])
 end
 
 

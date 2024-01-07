@@ -46,8 +46,9 @@ LuaRak::LuaRak(sol::table& module)
 		"sender", &RPCParameters::sender
 	);
 
+
 	module["UNASSIGNED_PLAYER_ID"] = std::ref(UNASSIGNED_PLAYER_ID);
-	module["UNASSIGNED_NETWORK_ID"] = std::ref(UNASSIGNED_NETWORK_ID);	
+	module["UNASSIGNED_NETWORK_ID"] = std::ref(UNASSIGNED_NETWORK_ID);
 
 
 	lua = module;
@@ -57,7 +58,10 @@ LuaRak::LuaRak(sol::table& module)
 
 void LuaRak::InitializeRakClient()
 {
-	sol::usertype<RakClient> RakClientType = lua.new_usertype<RakClient>("RakClient", sol::constructors<RakClient()>());
+	sol::usertype<RakClient> RakClientType = lua.new_usertype<RakClient>(
+		"RakClient", 
+		sol::constructors<RakClient()>()
+	);
 
 	RakClientType["Connect"] = &RakClient::Connect;
 	RakClientType["Disconnect"] = &RakClient::Disconnect;
@@ -165,111 +169,116 @@ void LuaRak::InitializeRakClient()
 	RakClientType["IsNetworkSimulatorActive"] = &RakClient::IsNetworkSimulatorActive;
 	RakClientType["GetPlayerIndex"] = &RakClient::GetPlayerIndex;
 
-	// Custom methods
+	// Custom RakNet methods
 	RakClientType["SetFakePing"] = &RakClient::SetFakePing;
-	RakClientType["RegisterSendHandler"] = &RakClient::RegisterSendHandler;
-	RakClientType["RegisterRPCHandler"] = &RakClient::RegisterRPCHandler;
 	RakClientType["RegisterReceiveRPCHandler"] = &RakClient::RegisterReceiveRPCHandler;
 }
 
 
 
-void LuaRak::InitializeRakServer()
-{
-	sol::usertype<RakServer> RakServerType = lua.new_usertype<RakServer>("RakServer", sol::constructors<RakServer()>());
+// void LuaRak::InitializeRakServer()
+// {
+// 	sol::usertype<RakServer> RakServerType = lua.new_usertype<RakServer>("RakServer", 
+// 		sol::constructors<RakServer()>()
+// 	);
 
-	RakServerType["Start"] = &RakServer::Start;
-	RakServerType["InitializeSecurity"] = &RakServer::InitializeSecurity;
-	RakServerType["DisableSecurity"] = &RakServer::DisableSecurity;
-	RakServerType["SetPassword"] = &RakServer::SetPassword;
-	RakServerType["HasPassword"] = &RakServer::HasPassword;
-	RakServerType["Disconnect"] = &RakServer::InitializeSecurity;
+// 	RakServerType["Start"] = &RakServer::Start;
+// 	RakServerType["InitializeSecurity"] = &RakServer::InitializeSecurity;
+// 	RakServerType["DisableSecurity"] = &RakServer::DisableSecurity;
+// 	RakServerType["SetPassword"] = &RakServer::SetPassword;
+// 	RakServerType["HasPassword"] = &RakServer::HasPassword;
+// 	RakServerType["Disconnect"] = &RakServer::InitializeSecurity;
 
 
-	RakServerType["SendBitStream"] = [](RakServer& pRakServer, BitStream* bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast)
-	{
-		return pRakServer.Send(bitStream, priority, reliability, orderingChannel, playerId, broadcast);
-	};
+// 	RakServerType["SendBitStream"] = [](RakServer& pRakServer, BitStream* bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast)
+// 	{
+// 		return pRakServer.Send(bitStream, priority, reliability, orderingChannel, playerId, broadcast);
+// 	};
 
-	RakServerType["SendData"] = [](RakServer& pRakServer, const char* data, const int length, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast)
-	{
-		return pRakServer.Send(data, length, priority, reliability, orderingChannel, playerId, broadcast);
-	};
+// 	RakServerType["SendData"] = [](RakServer& pRakServer, const char* data, const int length, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast)
+// 	{
+// 		return pRakServer.Send(data, length, priority, reliability, orderingChannel, playerId, broadcast);
+// 	};
 
-	RakServerType["Receive"] = &RakServer::Receive;
-	RakServerType["Kick"] = &RakServer::Kick;
-	RakServerType["DeallocatePacket"] = &RakServer::DeallocatePacket;
-	RakServerType["SetAllowedPlayers"] = &RakServer::SetAllowedPlayers;
-	RakServerType["GetAllowedPlayers"] = &RakServer::GetAllowedPlayers;
-	RakServerType["GetConnectedPlayers"] = &RakServer::GetConnectedPlayers;
-	RakServerType["GetPlayerIPFromID"] = &RakServer::GetPlayerIPFromID;
-	RakServerType["PingPlayer"] = &RakServer::PingPlayer;
-	RakServerType["GetAveragePing"] = &RakServer::GetAveragePing;
-	RakServerType["GetLastPing"] = &RakServer::GetLastPing;
-	RakServerType["GetLowestPing"] = &RakServer::GetLowestPing;
-	RakServerType["StartOccasionalPing"] = &RakServer::StartOccasionalPing;
-	RakServerType["StopOccasionalPing"] = &RakServer::StopOccasionalPing;
-	RakServerType["IsActive"] = &RakServer::IsActive;
-	RakServerType["GetSynchronizedRandomInteger"] = &RakServer::GetSynchronizedRandomInteger;
-	RakServerType["StartSynchronizedRandomInteger"] = &RakServer::StartSynchronizedRandomInteger;
-	RakServerType["StopSynchronizedRandomInteger"] = &RakServer::StopSynchronizedRandomInteger;
-	RakServerType["GenerateCompressionLayer"] = &RakServer::GenerateCompressionLayer;
-	RakServerType["DeleteCompressionLayer"] = &RakServer::DeleteCompressionLayer;
-	RakServerType["RegisterAsRemoteProcedureCall"] = &RakServer::RegisterAsRemoteProcedureCall;
-	RakServerType["RegisterClassMemberRPC"] = &RakServer::RegisterClassMemberRPC;
-	RakServerType["UnregisterAsRemoteProcedureCall"] = &RakServer::UnregisterAsRemoteProcedureCall;
+// 	RakServerType["Receive"] = &RakServer::Receive;
+// 	RakServerType["Kick"] = &RakServer::Kick;
+// 	RakServerType["DeallocatePacket"] = &RakServer::DeallocatePacket;
+// 	RakServerType["SetAllowedPlayers"] = &RakServer::SetAllowedPlayers;
+// 	RakServerType["GetAllowedPlayers"] = &RakServer::GetAllowedPlayers;
+// 	RakServerType["GetConnectedPlayers"] = &RakServer::GetConnectedPlayers;
+// 	RakServerType["GetPlayerIPFromID"] = &RakServer::GetPlayerIPFromID;
+// 	RakServerType["PingPlayer"] = &RakServer::PingPlayer;
+// 	RakServerType["GetAveragePing"] = &RakServer::GetAveragePing;
+// 	RakServerType["GetLastPing"] = &RakServer::GetLastPing;
+// 	RakServerType["GetLowestPing"] = &RakServer::GetLowestPing;
+// 	RakServerType["StartOccasionalPing"] = &RakServer::StartOccasionalPing;
+// 	RakServerType["StopOccasionalPing"] = &RakServer::StopOccasionalPing;
+// 	RakServerType["IsActive"] = &RakServer::IsActive;
+// 	RakServerType["GetSynchronizedRandomInteger"] = &RakServer::GetSynchronizedRandomInteger;
+// 	RakServerType["StartSynchronizedRandomInteger"] = &RakServer::StartSynchronizedRandomInteger;
+// 	RakServerType["StopSynchronizedRandomInteger"] = &RakServer::StopSynchronizedRandomInteger;
+// 	RakServerType["GenerateCompressionLayer"] = &RakServer::GenerateCompressionLayer;
+// 	RakServerType["DeleteCompressionLayer"] = &RakServer::DeleteCompressionLayer;
+// 	RakServerType["RegisterAsRemoteProcedureCall"] = &RakServer::RegisterAsRemoteProcedureCall;
+// 	RakServerType["RegisterClassMemberRPC"] = &RakServer::RegisterClassMemberRPC;
+// 	RakServerType["UnregisterAsRemoteProcedureCall"] = &RakServer::UnregisterAsRemoteProcedureCall;
 
-	RakServerType["RPCBitStream"] = [](RakServer& pRakServer, int rpcId, BitStream* bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast, bool shiftTimestamp, NetworkID networkId, BitStream* replyFromTarget)
-	{
-		return pRakServer.RPC(&rpcId, bitStream, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp, networkId, replyFromTarget);
-	};
+// 	RakServerType["RPCBitStream"] = [](RakServer& pRakServer, int rpcId, BitStream* bitStream, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast, bool shiftTimestamp, NetworkID networkId, BitStream* replyFromTarget)
+// 	{
+// 		return pRakServer.RPC(&rpcId, bitStream, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp, networkId, replyFromTarget);
+// 	};
 
-	RakServerType["RPCData"] = [](RakServer& pRakServer, int rpcId, const char* data, unsigned int bitLength, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast, bool shiftTimestamp, NetworkID networkId, BitStream* replyFromTarget)
-	{
-		return pRakServer.RPC(&rpcId, data, bitLength, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp, networkId, replyFromTarget);
-	};
+// 	RakServerType["RPCData"] = [](RakServer& pRakServer, int rpcId, const char* data, unsigned int bitLength, PacketPriority priority, PacketReliability reliability, char orderingChannel, PlayerID playerId, bool broadcast, bool shiftTimestamp, NetworkID networkId, BitStream* replyFromTarget)
+// 	{
+// 		return pRakServer.RPC(&rpcId, data, bitLength, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp, networkId, replyFromTarget);
+// 	};
 
-	RakServerType["SetTrackFrequencyTable"] = &RakServer::SetTrackFrequencyTable;
-	RakServerType["GetSendFrequencyTable"] = &RakServer::GetSendFrequencyTable;
-	RakServerType["GetCompressionRatio"] = &RakServer::GetCompressionRatio;
-	RakServerType["GetDecompressionRatio"] = &RakServer::GetDecompressionRatio;
-	RakServerType["AttachPlugin"] = &RakServer::AttachPlugin;
-	RakServerType["DetachPlugin"] = &RakServer::DetachPlugin;
-	RakServerType["GetStaticServerData"] = &RakServer::GetStaticServerData;
-	RakServerType["SetStaticServerData"] = &RakServer::SetStaticServerData;
-	RakServerType["SetRelayStaticClientData"] = &RakServer::SetRelayStaticClientData;
-	RakServerType["SendStaticServerDataToClient"] = &RakServer::SendStaticServerDataToClient;
-	RakServerType["SetOfflinePingResponse"] = &RakServer::SetOfflinePingResponse;
-	RakServerType["GetStaticClientData"] = &RakServer::GetStaticClientData;
-	RakServerType["SetStaticClientData"] = &RakServer::SetStaticClientData;
-	RakServerType["ChangeStaticClientData"] = &RakServer::ChangeStaticClientData;
-	RakServerType["GetNumberOfAddresses"] = &RakServer::GetNumberOfAddresses;
-	RakServerType["GetLocalIP"] = &RakServer::GetLocalIP;
-	RakServerType["GetInternalID"] = &RakServer::GetInternalID;
-	RakServerType["PushBackPacket"] = &RakServer::PushBackPacket;
-	RakServerType["SetRouterInterface"] = &RakServer::SetRouterInterface;
-	RakServerType["RemoveRouterInterface"] = &RakServer::RemoveRouterInterface;
-	RakServerType["GetIndexFromPlayerID"] = &RakServer::GetIndexFromPlayerID;
-	RakServerType["GetPlayerIDFromIndex"] = &RakServer::GetPlayerIDFromIndex;
-	RakServerType["AddToBanList"] = &RakServer::AddToBanList;
-	RakServerType["RemoveFromBanList"] = &RakServer::RemoveFromBanList;
-	RakServerType["ClearBanList"] = &RakServer::ClearBanList;
-	RakServerType["IsBanned"] = &RakServer::IsBanned;
-	RakServerType["IsActivePlayerID"] = &RakServer::IsActivePlayerID;
-	RakServerType["SetTimeoutTime"] = &RakServer::SetTimeoutTime;
-	RakServerType["SetMTUSize"] = &RakServer::SetMTUSize;
-	RakServerType["GetMTUSize"] = &RakServer::GetMTUSize;
-	RakServerType["AdvertiseSystem"] = &RakServer::AdvertiseSystem;
-	RakServerType["GetStatistics"] = &RakServer::GetStatistics;
-	RakServerType["ApplyNetworkSimulator"] = &RakServer::ApplyNetworkSimulator;
-	RakServerType["IsNetworkSimulatorActive"] = &RakServer::IsNetworkSimulatorActive;
-}
+// 	RakServerType["SetTrackFrequencyTable"] = &RakServer::SetTrackFrequencyTable;
+// 	RakServerType["GetSendFrequencyTable"] = &RakServer::GetSendFrequencyTable;
+// 	RakServerType["GetCompressionRatio"] = &RakServer::GetCompressionRatio;
+// 	RakServerType["GetDecompressionRatio"] = &RakServer::GetDecompressionRatio;
+// 	RakServerType["AttachPlugin"] = &RakServer::AttachPlugin;
+// 	RakServerType["DetachPlugin"] = &RakServer::DetachPlugin;
+// 	RakServerType["GetStaticServerData"] = &RakServer::GetStaticServerData;
+// 	RakServerType["SetStaticServerData"] = &RakServer::SetStaticServerData;
+// 	RakServerType["SetRelayStaticClientData"] = &RakServer::SetRelayStaticClientData;
+// 	RakServerType["SendStaticServerDataToClient"] = &RakServer::SendStaticServerDataToClient;
+// 	RakServerType["SetOfflinePingResponse"] = &RakServer::SetOfflinePingResponse;
+// 	RakServerType["GetStaticClientData"] = &RakServer::GetStaticClientData;
+// 	RakServerType["SetStaticClientData"] = &RakServer::SetStaticClientData;
+// 	RakServerType["ChangeStaticClientData"] = &RakServer::ChangeStaticClientData;
+// 	RakServerType["GetNumberOfAddresses"] = &RakServer::GetNumberOfAddresses;
+// 	RakServerType["GetLocalIP"] = &RakServer::GetLocalIP;
+// 	RakServerType["GetInternalID"] = &RakServer::GetInternalID;
+// 	RakServerType["PushBackPacket"] = &RakServer::PushBackPacket;
+// 	RakServerType["SetRouterInterface"] = &RakServer::SetRouterInterface;
+// 	RakServerType["RemoveRouterInterface"] = &RakServer::RemoveRouterInterface;
+// 	RakServerType["GetIndexFromPlayerID"] = &RakServer::GetIndexFromPlayerID;
+// 	RakServerType["GetPlayerIDFromIndex"] = &RakServer::GetPlayerIDFromIndex;
+// 	RakServerType["AddToBanList"] = &RakServer::AddToBanList;
+// 	RakServerType["RemoveFromBanList"] = &RakServer::RemoveFromBanList;
+// 	RakServerType["ClearBanList"] = &RakServer::ClearBanList;
+// 	RakServerType["IsBanned"] = &RakServer::IsBanned;
+// 	RakServerType["IsActivePlayerID"] = &RakServer::IsActivePlayerID;
+// 	RakServerType["SetTimeoutTime"] = &RakServer::SetTimeoutTime;
+// 	RakServerType["SetMTUSize"] = &RakServer::SetMTUSize;
+// 	RakServerType["GetMTUSize"] = &RakServer::GetMTUSize;
+// 	RakServerType["AdvertiseSystem"] = &RakServer::AdvertiseSystem;
+// 	RakServerType["GetStatistics"] = &RakServer::GetStatistics;
+// 	RakServerType["ApplyNetworkSimulator"] = &RakServer::ApplyNetworkSimulator;
+// 	RakServerType["IsNetworkSimulatorActive"] = &RakServer::IsNetworkSimulatorActive;
+// }
 
 
 
 void LuaRak::InitializeBitStream()
 {
-	sol::usertype<BitStream> BitStreamType = lua.new_usertype<BitStream>("BitStream", sol::constructors<BitStream(), BitStream(unsigned char* data, unsigned int lengthInBytes, bool copyData)>());
+	sol::usertype<BitStream> BitStreamType = lua.new_usertype<BitStream>("BitStream", 
+		sol::constructors<
+			BitStream(), 
+			BitStream(unsigned char* data, unsigned int lengthInBytes, bool copyData)
+		>()
+	);
 
 	BitStreamType["Reset"] = &BitStream::Reset;
 	BitStreamType["ResetReadPointer"] = &BitStream::ResetReadPointer;
@@ -282,7 +291,13 @@ void LuaRak::InitializeBitStream()
 	BitStreamType["GetNumberOfBytesUsed"] = &BitStream::GetNumberOfBytesUsed;
 	BitStreamType["GetNumberOfUnreadBits"] = &BitStream::GetNumberOfUnreadBits;
 	BitStreamType["IgnoreBits"] = &BitStream::IgnoreBits;
+	BitStreamType["CopyData"] = &BitStream::CopyData;
 	BitStreamType["GetData"] = &BitStream::GetData;
+	BitStreamType["SetData"] = &BitStream::SetData;
+	BitStreamType["WriteBits"] = &BitStream::WriteBits;
+	BitStreamType["WriteAlignedBytes"] = &BitStream::WriteAlignedBytes;
+	BitStreamType["ReadAlignedBytes"] = &BitStream::ReadAlignedBytes;
+	BitStreamType["ReadBits"] = &BitStream::ReadBits;
 	
 	BitStreamType["WriteUInt8"] = &LuaBitStream::WriteValue<unsigned char>;
 	BitStreamType["WriteUInt16"] = &LuaBitStream::WriteValue<unsigned short>;
@@ -309,41 +324,32 @@ void LuaRak::InitializeBitStream()
 
 void LuaRak::InitializeProxy()
 {
-	sol::usertype<SOCKS5::SOCKS5> ProxyType = lua.new_usertype<SOCKS5::SOCKS5>("Proxy", sol::constructors<SOCKS5::SOCKS5()>());
-
-	ProxyType["Start"] = sol::overload(
-		static_cast<bool (SOCKS5::SOCKS5::*)(const std::string ProxyIP, const std::string ProxyPort)>(&SOCKS5::SOCKS5::Start),
-		static_cast<bool (SOCKS5::SOCKS5::*)(const std::string ProxyIP, const std::string ProxyPort, const std::string ProxyLogin, const std::string ProxyPassword)>(&SOCKS5::SOCKS5::Start)
+	sol::usertype<SOCKS5::SOCKS5> ProxyType = lua.new_usertype<SOCKS5::SOCKS5>("Proxy", 
+		sol::constructors<
+			SOCKS5::SOCKS5(),
+			SOCKS5::SOCKS5(const std::string ProxyIP, const std::string ProxyPort, const std::string ProxyLogin, const std::string ProxyPassword),
+			SOCKS5::SOCKS5(const std::string ProxyIP, const std::string ProxyPort)
+		>()
 	);
 
-	ProxyType["SendTo"] = &SOCKS5::SOCKS5::SendTo;
-	ProxyType["RecvFrom"] = &SOCKS5::SOCKS5::RecvFrom;
-	ProxyType["IsStarted"] = &SOCKS5::SOCKS5::IsStarted;
-	ProxyType["getIP"] = &SOCKS5::SOCKS5::GetProxyIP;
-	ProxyType["getPORT"] = &SOCKS5::SOCKS5::GetProxyPort;
-	ProxyType["IsValidProxy"] = &SOCKS5::SOCKS5::IsValidProxy;
-	ProxyType["SetValidProxy"] = &SOCKS5::SOCKS5::SetValidProxy;
-	ProxyType["IsReceivingByProxy"] = &SOCKS5::SOCKS5::IsReceivingByProxy;
-	ProxyType["SetReceivingByProxy"] = &SOCKS5::SOCKS5::SetReceivingByProxy;
-}
+	ProxyType["start"] = sol::overload(
+		static_cast<std::pair<bool, SOCKS5::SOCKS5Err>(SOCKS5::SOCKS5::*)(const std::string ProxyIP, const std::string ProxyPort)>(&SOCKS5::SOCKS5::Start),
+		static_cast<std::pair<bool, SOCKS5::SOCKS5Err>(SOCKS5::SOCKS5::*)(const std::string ProxyIP, const std::string ProxyPort, const std::string ProxyLogin, const std::string ProxyPassword)>(&SOCKS5::SOCKS5::Start)
+	);
 
+	ProxyType["startWithAuth"] = &SOCKS5::SOCKS5::StartWithAuth;
+	ProxyType["startWithoutAuth"] = &SOCKS5::SOCKS5::StartWithoutAuth;
 
-
-void LuaRak::InitializeNetEncryption()
-{
-	lua.set_function("kyretardizeDatagram", kyretardizeDatagram);
-	lua.set_function("unKyretardizeDatagram", unKyretardizeDatagram);
-}
-
-
-
-void LuaRak::InitializeStringCompressor()
-{
-	sol::usertype<StringCompressor> StringCompressorType = lua.new_usertype<StringCompressor>("StringCompressor");
-	StringCompressorType["AddReference"] = &StringCompressor::AddReference;	
-	StringCompressorType["DecodeString"] = &StringCompressor::DecodeString;
-	StringCompressorType["EncodeString"] = &StringCompressor::EncodeString;
-	StringCompressorType["GenerateTreeFromStrings"] = &StringCompressor::GenerateTreeFromStrings;
-	StringCompressorType["Instance"] = &StringCompressor::Instance;
-	StringCompressorType["RemoveReference"] = &StringCompressor::RemoveReference;
+	ProxyType["sendTo"] = &SOCKS5::SOCKS5::SendTo;
+	ProxyType["recvFrom"] = &SOCKS5::SOCKS5::RecvFrom;
+	ProxyType["restart"] = &SOCKS5::SOCKS5::Restart;
+	ProxyType["isStarted"] = &SOCKS5::SOCKS5::IsStarted;
+	ProxyType["getProxyIP"] = &SOCKS5::SOCKS5::GetProxyIP;
+	ProxyType["getProxyPort"] = &SOCKS5::SOCKS5::GetProxyPort;
+	ProxyType["getPublicProxyIP"] = &SOCKS5::SOCKS5::GetPublicProxyIP;
+	ProxyType["isValidProxy"] = &SOCKS5::SOCKS5::IsValidProxy;
+	ProxyType["setValidProxy"] = &SOCKS5::SOCKS5::SetValidProxy;
+	ProxyType["isReceivingByProxy"] = &SOCKS5::SOCKS5::IsReceivingByProxy;
+	ProxyType["setReceivingByProxy"] = &SOCKS5::SOCKS5::SetReceivingByProxy;
+	ProxyType["shutdown"] = &SOCKS5::SOCKS5::Shutdown;
 }

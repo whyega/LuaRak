@@ -23,9 +23,11 @@
 #include "PacketPriority.h"
 #include "RakPeerInterface.h"
 #include "BitStream.h"
+#include "SOCKS5.hpp"
 #include "RakNetStatistics.h" 
 
-#include "SOCKS5.hpp"
+// LuaRak
+#include "sol.hpp"
 
 /// This is a user-interface class to act as a game client.  All it does is implement some functionality on top of RakPeer.
 /// See the individual functions for what the class can do.
@@ -400,13 +402,11 @@ public:
 	/// Retrieve the player index corresponding to this client. 
 	virtual PlayerIndex GetPlayerIndex( void )=0;
 
-	virtual void RegisterSendHandler(sol::function func)=0;
+	// --------------------------------------------------------------------------------------------Custom function for LuaRak--------------------------------------------------------------------------------------------
 
-	virtual void RegisterRPCHandler(sol::function func)=0;
+	virtual void RegisterReceiveRPCHandler(sol::function handler) = 0;
 
-	virtual void RegisterReceiveRPCHandler(sol::function func)=0;
-
-	virtual void SetFakePing(bool bUseFakePing, __int32 ping)=0;
+	virtual void SetFakePing(bool bUseFakePing, int ping) = 0;
 };
 
 #endif

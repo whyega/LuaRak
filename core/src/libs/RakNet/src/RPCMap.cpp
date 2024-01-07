@@ -107,7 +107,6 @@ void RPCMap::AddIdentifierWithFunction(int *uniqueIdentifier, void *functionPoin
 }
 void RPCMap::AddIdentifierAtIndex(RPCIndex insertionIndex)
 {
-
 	unsigned existingNodeIndex;
 	RPCNode *node, *oldNode;
 

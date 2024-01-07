@@ -4,7 +4,7 @@
 
 
 #include <string>
-#include "samp_netencr.h"
+#include "NetEncrypt.hpp"
 
 int dblSpace;
 char buf[131072];
@@ -236,7 +236,7 @@ std::string& unKyretardizeDatagram(unsigned char* buf, int len, int port, std::s
 
 	if (bChecksum != bChecksumEncr)
 	{
-		printf("Bad checksum");
+		printf("Bad checksum\n");
 	}
 	return decrBuf;
 }

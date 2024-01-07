@@ -1,3 +1,7 @@
+local ffi = require("ffi")
+
+
+
 local authKeyTable = {
 	["6C407EC29DE59E2"] = "D9412F235647BAA582089C6F66817F8B8811C057",
 	["277C2AD934406F33"] = "132770E4744F6E78F2CBB4D3F3638EC05D7EA79D",
@@ -531,8 +535,82 @@ end
 
 
 
-function misc:generateGPCI(factor)
+function misc:bigNumMul(input, output, factor)
+	local src = ffi.new("unsigned long[5]")
+	for i = 0, 4 do
+		src[i] = bit.bor(
+			bit.rshift(input[4 - i], 24),
+			bit.band(bit.lshift(input[4 - i], 8), 0x00FF0000),
+			bit.band(bit.rshift(input[4 - i], 8), 0x0000FF00),
+			bit.lshift(input[4 - i], 24)
+		)
+	end
 
+	local tmp = ffi.cast("unsigned long long", src[0]) * ffi.cast("unsigned long long", factor)
+	output[0] = bit.band(tmp, 0xFFFFFFFF)
+	output[1] = bit.rshift(tmp, 32)
+	tmp = ffi.cast("unsigned long long", src[1]) * ffi.cast("unsigned long long", factor) + ffi.cast("unsigned long long", output[1])
+	output[1] = bit.band(tmp, 0xFFFFFFFF)
+	output[2] = bit.rshift(tmp, 32)
+	tmp = ffi.cast("unsigned long long", src[2]) * ffi.cast("unsigned long long", factor) + ffi.cast("unsigned long long", output[2])
+	output[2] = bit.band(tmp, 0xFFFFFFFF)
+	output[3] = bit.rshift(tmp, 32)
+	tmp = ffi.cast("unsigned long long", src[3]) * ffi.cast("unsigned long long", factor) + ffi.cast("unsigned long long", output[3])
+	output[3] = bit.band(tmp, 0xFFFFFFFF)
+	output[4] = bit.rshift(tmp, 32)
+	tmp = ffi.cast("unsigned long long", src[4]) * ffi.cast("unsigned long long", factor) + ffi.cast("unsigned long long", output[4])
+	output[4] = bit.band(tmp, 0xFFFFFFFF)
+	output[5] = bit.rshift(tmp, 32)
+
+	for i = 0, 11 do
+		local temp = ffi.cast("unsigned char*", output)[i]
+		ffi.cast("unsigned char*", output)[i] = ffi.cast("unsigned char*", output)[23 - i]
+		ffi.cast("unsigned char*", output)[23 - i] = temp
+	end
+end
+
+
+
+function misc:generateGPCI(factor)
+	local buf = ffi.new("char[64]")
+	local out = ffi.new("unsigned char[24]")
+	local alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	math.randomseed(os.time())
+	for i = 0, 23 do
+		out[i] = ffi.cast("char", alphanum:sub(math.random(#alphanum)):byte())
+	end
+
+	local pulOut = ffi.cast("unsigned long*", out)
+	self:bigNumMul(pulOut, pulOut, factor)
+
+	local notzero = false
+	buf[0] = 48
+	buf[1] = 0
+
+	if factor == 0 then return false end
+
+	local pos = 0
+	for i = 0, 23 do
+		local tmp = tonumber(ffi.cast("unsigned char", bit.rshift(out[i], 4)))
+		local tmp2 = tonumber(ffi.cast("unsigned char", bit.band(out[i], 0x0F)))
+
+		if notzero or tmp ~= 0 then
+			buf[pos] = ffi.cast("char", tmp > 9 and tmp + 55 or tmp + 48)
+			pos = pos + 1
+			if not notzero then notzero = true end
+		end
+
+		if notzero or tmp2 ~= 0 then
+			buf[pos] = ffi.cast("char", tmp2 > 9 and tmp2 + 55 or tmp2 + 48)
+			pos = pos + 1
+			if not notzero then notzero = true end
+		end
+	end
+
+	buf[pos] = 0
+
+	return ffi.string(buf)
 end
 
 

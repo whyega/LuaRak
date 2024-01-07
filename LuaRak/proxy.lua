@@ -1,4 +1,5 @@
 local RakCore = require("LuaRak.core")
+local utils = require("LuaRak.utils")
 
 
 
@@ -6,28 +7,30 @@ local Proxy = {}
 
 
 
-function Proxy:new(address, port, user, password, isActivity)
-    self.proxy = RakCore.Proxy:new()
-    self.proxy:Start(address, port, user, password)
-    print(self.proxy.SetReceivingByProxy)
-    if isActivity then self.proxy:SetReceivingByProxy(true) end
+function Proxy:new(address, port, user, password)
+    assert(utils:isType(address, "string"))
+
+    port = tostring(port)
+    self.proxy = RakCore.Proxy:new(address, port, user, password)
+
 
     return setmetatable(self, {
-        __index = function(t, k)
-            return rawget(t, k)
-        end
+        __index = rawget
     })
 end
 
 
 
-function Proxy:setReceiving(toggle)
-    self.proxy:SetReceivingByProxy(toggle)
+function Proxy:connect(isNoAuth)
+    local result = isNoAuth and self.proxy:startWithoutAuth() or self.proxy:startWithAuth()
+    self.proxy:setReceivingByProxy(true)
+
+    return result
 end
 
 
 
-function Proxy:getProxy(toggle)
+function Proxy:getProxy()
     return self.proxy
 end
 

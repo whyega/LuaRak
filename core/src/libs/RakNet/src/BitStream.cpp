@@ -736,8 +736,8 @@ unsigned char* BitStream::GetData( void ) const
 {
 	return data;
 }
-*/
 
+*/
 // If we used the constructor version with copy data off, this makes sure it is set to on and the data pointed to is copied.
 void BitStream::AssertCopyData( void )
 {

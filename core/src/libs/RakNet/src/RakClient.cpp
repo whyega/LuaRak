@@ -41,16 +41,12 @@ RakClient::~RakClient()
 {}
 
 #include <exception>
-#include <SOCKS5.hpp>
 
 #ifdef _MSC_VER
 #pragma warning( disable : 4100 ) // warning C4100: 'depreciated' : unreferenced formal parameter
 #endif
 bool RakClient::Connect( const char* host, unsigned short serverPort, unsigned short clientPort, unsigned int depreciated, int _threadSleepTimer, SOCKS5::SOCKS5* pProxy )
 {
-	printf("CONNECT %d %d\n", pProxy->IsStarted(), pProxy->IsReceivingByProxy());
-	pRakClientProxy = pProxy;
-
 	if (pProxy == nullptr)
 		throw std::exception("function [[ bool RakClient::Connect( const char* host, unsigned short serverPort, unsigned short clientPort, unsigned int depreciated, int _threadSleepTimer, void* pProxy ) ]] called with null pointer to proxy");
 	
@@ -68,6 +64,8 @@ bool RakClient::Connect( const char* host, unsigned short serverPort, unsigned s
 	/*end of rect connect fix*/
 
 	RakPeer::Initialize( 1, clientPort, _threadSleepTimer );
+	
+	pRakClientProxy = pProxy;
 
 	if ( host[ 0 ] < '0' || host[ 0 ] > '2' )
 	{
@@ -625,25 +623,15 @@ PlayerIndex RakClient::GetPlayerIndex( void )
 	return localPlayerIndex;
 }
 
-void RakClient::RegisterSendHandler(sol::function func)
+void RakClient::RegisterReceiveRPCHandler(sol::function handler)
 {
-	RakPeer::RegisterSendHandler(func);
+	RakPeer::RegisterReceiveRPCHandler(handler);
 }
 
-void RakClient::RegisterRPCHandler(sol::function func)
+void RakClient::SetFakePing(bool bIsUseFakePing, int iFakePing)
 {
-	RakPeer::RegisterRPCHandler(func);
+	RakPeer::SetFakePing(bIsUseFakePing, iFakePing);
 }
-
-void RakClient::RegisterReceiveRPCHandler(sol::function func)
-{
-	RakPeer::RegisterReceiveRPCHandler(func);
-}
-
-void RakClient::SetFakePing(bool bUseFakePing, __int32 ping) {
-	RakPeer::SetFakePing(bUseFakePing, ping);
-}
-
 
 #ifdef _MSC_VER
 #pragma warning( pop )

@@ -1,52 +1,42 @@
 local RakCore = require("LuaRak.core")
 local LuaClient = require("LuaRak.samp.client")
-local LuaServer = require("LuaRak.samp.server")
-local bitstream = require("LuaRak.bitstream")
+local LuaProxy = require("LuaRak.proxy")
+local LuaBitStream = require("LuaRak.bitstream")
 
 
 
 local LuaRak = {}
 
 
-
+---Create new instance SAMP client
+---@param nickname string
+---@return table
 function LuaRak:client(nickname)
     return LuaClient:new(nickname)
 end
 
 
-
-function LuaRak:server(maxPlayers, port)
-    return LuaServer:new(maxPlayers, port)
-end
-
-
-
+---Create new BitStream buffer
+---@param ... unknown
+---@return table
 function LuaRak:BitStream(...)
-    return bitstream:new(...)
+    return LuaBitStream:new(...)
 end
 
 
-
-function LuaRak:createProxy()
-    return self:getCore().Proxy:new()
+---Create SOCKS5 UDP proxy
+---@param address string
+---@param port number
+---@param user string
+---@param password string
+---@return table
+function LuaRak:proxy(address, port, user, password)
+    return LuaProxy:new(address, port, user, password)
 end
 
 
-
-function LuaRak:loadClientModule(module)
-    local path = ("LuaRak.samp.client.modules.%s"):format(module)
-    return require(path)
-end
-
-
-
-function LuaRak:loadServerModule(module)
-    local path = ("LuaRak.samp.server.modules.%s"):format(module)
-    return require(path)
-end
-
-
-
+---Return core RakNet library
+---@return unknown
 function LuaRak:getCore()
     return RakCore
 end

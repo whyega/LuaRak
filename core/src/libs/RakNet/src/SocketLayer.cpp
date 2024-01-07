@@ -21,7 +21,8 @@
  * Refer to the appropriate license agreement for distribution,
  * modification, and warranty rights.
 */
-#include "../Misc/samp_netencr.h"
+
+#include "NetEncrypt.hpp"
 #include "SocketLayer.h"
 #include <assert.h>
 #include "MTUSize.h"
@@ -47,7 +48,6 @@ typedef int socklen_t;
 #ifdef _MSC_VER
 #pragma warning( push )
 #endif
-
 
 bool SocketLayer::socketLayerStarted = false;
 #ifdef _WIN32
@@ -402,32 +402,15 @@ int SocketLayer::RecvFrom( const SOCKET s, RakPeer *rakPeer, int *errorCode, voi
 	
 	if ( len != SOCKET_ERROR )
 	{
-		//const char* pdata = data;
-		//unsigned short portnum = ntohs(sa.sin_port);
-		//std::string buf;
-		//if (((CProxy*)pProxy)->IsStarted()) // RAKSAMP PROXY
-		//{
-		//	SOCKS5::UDPDatagramHeader* udph = (SOCKS5::UDPDatagramHeader*)data;
-		//	sa.sin_addr.s_addr = udph->ulAddressIPv4;
-		//	portnum = htons(udph->usPort);
-		//	pdata = data + sizeof(SOCKS5::UDPDatagramHeader);
-		//	len -= sizeof(SOCKS5::UDPDatagramHeader);
-		//}
-		//else
-		//{
-		//	portnum = ntohs(sa.sin_port);
-		//}
-
-		//if(((CProxy*)pProxy)->IsStarted())
-		//	ProcessNetworkPacket( sa.sin_addr.s_addr, portnum, pdata, len, rakPeer );
-		//else ProcessNetworkPacket( sa.sin_addr.s_addr, portnum, data, len, rakPeer );
-
 		const char* pdata = data;
 		unsigned short portnum;
 		portnum = ntohs(sa.sin_port);
 		std::string buf;
-		if ( (((SOCKS5::SOCKS5*)pProxy)->IsStarted() == true) && (((SOCKS5::SOCKS5*)pProxy)->IsReceivingByProxy() == true) ) // PROXY
+		
+		auto proxy = ((SOCKS5::SOCKS5*)pProxy);
+		if ( proxy && proxy->IsStarted() && proxy->IsReceivingByProxy() )
 		{
+			// RAKSAMP PROXY
 			SOCKS5::UDPDatagramHeader* udph = (SOCKS5::UDPDatagramHeader*)data;
 			sa.sin_addr.s_addr = udph->ulAddressIPv4;
 			portnum = htons(udph->usPort);
@@ -468,33 +451,18 @@ int SocketLayer::SendTo( SOCKET s, const char *data, int length, unsigned int bi
 	sa.sin_port = htons( port );
 	sa.sin_addr.s_addr = binaryAddress;
 	sa.sin_family = AF_INET;
-
-
-	//kyretardizeDatagram((unsigned char *)data, length, port, 0);
-
-	//std::string buffer;
-	//if(((CProxy*)pProxy)->IsStarted())
-	//	kyretardizeDatagram_v2((unsigned char*)data, length, port, buffer);
-	//else kyretardizeDatagram((unsigned char*)data, length, port, 0);
-
-	//do
-	//{
-	//	if(!((CProxy*)pProxy)->IsStarted())
-	//		len = sendto(s, (char*)data, length + 1, 0, (const sockaddr*)&sa, sizeof(struct sockaddr_in));
-	//	else
-	//		len = ((CProxy*)pProxy)->SendTo(s, (char*)buffer.c_str(), length + 1, 0, &sa, sizeof(sockaddr_in)); // RAKSAMP PROXY
-	//} while (len == 0);
-
-	//kyretardizeDatagram((unsigned char*)data, length, port, 0);
-
+	
 	std::string buffer;
 	kyretardizeDatagram_v2((unsigned char*)data, length, port, buffer);
 
 	do
 	{	
-		if ( ((((SOCKS5::SOCKS5*)pProxy)->IsStarted()) == true) && ((((SOCKS5::SOCKS5*)pProxy)->IsReceivingByProxy()) == true) )
+		auto proxy = ((SOCKS5::SOCKS5*)pProxy);
+
+		if (proxy && proxy->IsStarted() && proxy->IsReceivingByProxy())
 		{
-			len = ((SOCKS5::SOCKS5*)pProxy)->SendTo(s, (char*)buffer.data(), length + 1, 0, &sa, sizeof(sockaddr_in)); // RAKSAMP PROXY
+			// RAKSAMP PROXY
+			len = proxy->SendTo(s, (char*)buffer.data(), length + 1, 0, &sa, sizeof(sockaddr_in));
 		}
 		else
 		{

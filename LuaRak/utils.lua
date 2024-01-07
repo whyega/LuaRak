@@ -1,4 +1,5 @@
 local bit = require("bit")
+local ffi = require("ffi")
 
 
 
@@ -21,9 +22,23 @@ function utils:getBitStream(bitstream)
 end
 
 
+function utils:getProxy(proxy)
+    return type(proxy) == "userdata" and proxy or proxy:getProxy()
+end
+
 
 function utils:log(text)
     return print(("[LuaRak]: %s"):format(text))
+end
+
+
+function utils:isType(value, inType)
+    return type(value) == inType
+end
+
+
+function utils:getPointer(cdata)
+    return tonumber(ffi.cast("uintptr_t", ffi.cast("void*", cdata)))
 end
 
 

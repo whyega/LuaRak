@@ -14,7 +14,6 @@
 /// Software Foundation; either version 2 of the License, or (at your
 /// option) any later version.
 
-//#include "main.h"
 #include "RakNetDefines.h"
 #include "RakPeer.h"
 #include "NetworkTypes.h"
@@ -867,17 +866,6 @@ bool RakPeer::Send( RakNet::BitStream * bitStream, PacketPriority priority, Pack
 	assert( bitStream->GetNumberOfBytesUsed() > 0 );
 #endif
 
-	unsigned char packetId;
-	int readOffset = bitStream->GetReadOffset();
-	bitStream->ResetReadPointer();
-	bitStream->Read(packetId);
-	bitStream->SetReadOffset(readOffset);
-
-	for (auto& handler : SendHandlers)
-	{		
-		handler(packetId, bitStream);
-	}
-
 	if ( bitStream->GetNumberOfBytesUsed() == 0 )
 		return false;
 
@@ -914,7 +902,6 @@ bool RakPeer::Send( RakNet::BitStream * bitStream, PacketPriority priority, Pack
 Packet* RakPeer::Receive( void )
 {
 	Packet *packet = ReceiveIgnoreRPC();
-
 	while (packet && (packet->data[ 0 ] == ID_RPC || (packet->length>sizeof(unsigned char)+sizeof(RakNetTime) && packet->data[0]==ID_TIMESTAMP && packet->data[sizeof(unsigned char)+sizeof(RakNetTime)]==ID_RPC)))
 	{
 		// Do RPC calls from the user thread, not the network update thread
@@ -1177,13 +1164,6 @@ bool RakPeer::RPC( int* uniqueID, const char *data, unsigned int bitLength, Pack
 	assert( uniqueID && uniqueID[ 0 ] );
 	assert(orderingChannel >=0 && orderingChannel < 32);
 #endif
-
-	RakNet::BitStream bitStream((unsigned char*)data, BITS_TO_BYTES(bitLength), false);
-
-	for (auto& handler : RPCHandlers)
-	{
-		handler(*uniqueID, bitStream);
-	}
 
 	if ( *uniqueID > 256 )
 		return false;
@@ -2873,66 +2853,7 @@ bool RakPeer::HandleRPCPacket( const char *data, int length, PlayerID playerId )
 		return false;
 	}
 
-	/*if (uniqueIdentifier != (int *)RPC_UpdateScoresPingsIPs)
-	{
-		RakNet::BitStream bs((unsigned char *) data, length, false);
-		
-		bs.IgnoreBits(16);
-		unsigned int numdatbits = 0;
-		bs.ReadCompressed(numdatbits);
-		unsigned char *dtt = new unsigned char[BITS_TO_BYTES(bs.GetNumberOfUnreadBits())];
-		bs.ReadBits(dtt, numdatbits, false);
-		Log("[RPC] uniqueIdentifier: %d", uniqueIdentifier);
-		
-		char mess[1024] = {0};
-		for (unsigned int i = 0; i < BITS_TO_BYTES(numdatbits); i++)
-		{
-			char txt_t[32] = {0};
-			sprintf_s(txt_t, sizeof(txt_t), "%c", dtt[i]);
-			strcat_s(mess, sizeof(mess), txt_t);
-		}
-		Log(mess);
-
-		delete [] dtt;
-	}*/ //// ponpon use this if you wanna identify RPCs
-
-	
-
-	/*if (pAlphaBot.get()) {
-
-		int iProcessedBotID = -1;
-
-		for (int i  = 0; i != SAMP_MAX_PLAYERS; i++)
-		{
-			if (pAlphaBot->IsBotConnected(i) && pAlphaBot->GetBotProxy(i) == pRakPeerProxy)
-			{
-				iProcessedBotID = i;
-			}
-		}
-
-		if (iProcessedBotID != -1)
-		{
-			RakNet::BitStream bs((unsigned char*)data, length, true);
-
-			bs.IgnoreBits(16);
-			unsigned int numdatbits = 0;
-			bs.ReadCompressed(numdatbits);
-			unsigned char* dtt = new unsigned char[BITS_TO_BYTES(bs.GetNumberOfUnreadBits())];
-			bs.ReadBits(dtt, numdatbits, false);
-				
-			RakNet::BitStream bs2(dtt, (numdatbits / 8) + 1, false);
-
-			delete[] dtt;
-
-			int rpcID = (int)uniqueIdentifier;
-			
-			mtx2000.lock();
-			pAlphaBot->RPCHandle(iProcessedBotID, rpcID, bs2);
-			mtx2000.unlock();
-		}
-
-	}*/
-
+	// LuaRak
 	RakNet::BitStream bs((unsigned char*)data, length, false);
 
 	bs.IgnoreBits(16);
@@ -2947,7 +2868,7 @@ bool RakPeer::HandleRPCPacket( const char *data, int length, PlayerID playerId )
 
 	int rpcID = (int)uniqueIdentifier;
 
-	for (auto& handler : ReceiveRPCHandlers)
+	for (auto handler : ReceiveRPCHandlers)
 	{
 		handler(rpcID, bs2);
 	}
@@ -4958,31 +4879,16 @@ bool RakPeer::RunUpdateCycle( void )
 	return true;
 }
 
-
-//˜˜˜˜ ˜˜˜˜
-//bool bUseFakePing - ˜˜˜˜˜˜˜˜/˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜
-//__in32 ping - ˜˜˜˜, ˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜ ˜ ˜˜˜˜
-void RakPeer::SetFakePing(bool bUseFakePing, __int32 ping) {
-	this->bIsUseFakePing = bUseFakePing;
-	this->iFakePing = ping;
-}
-
-void RakPeer::RegisterSendHandler(sol::function func)
+void RakPeer::RegisterReceiveRPCHandler(sol::function handler)
 {
-	SendHandlers.push_back(func);
+	ReceiveRPCHandlers.push_back(handler);
 }
 
-void RakPeer::RegisterRPCHandler(sol::function func)
+void RakPeer::SetFakePing(bool bIsUse, int iPing)
 {
-	RPCHandlers.push_back(func);
+	bIsUseFakePing = bIsUse;
+	iFakePing = iPing;
 }
-
-//˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜
-void RakPeer::RegisterReceiveRPCHandler(sol::function func) 
-{
-	ReceiveRPCHandlers.push_back(func);
-}
-
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #ifdef _WIN32
